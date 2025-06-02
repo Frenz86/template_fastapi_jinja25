@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - FastAPI CRUD{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-users me-2 text-primary"></i>
+                {{ title }}
+            </h1>
+            <a href="/users/create" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Nuovo Utente
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-white">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Lista Utenti ({{ users|length }})
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            Totale utenti: {{ users|length }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body p-0">
+                {% if users %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">
+                                    <i class="fas fa-user me-1"></i>Nome
+                                </th>
+                                <th scope="col">
+                                    <i class="fas fa-envelope me-1"></i>Email
+                                </th>
+                                <th scope="col">
+                                    <i class="fas fa-birthday-cake me-1"></i>Età
+                                </th>
+                                <th scope="col">
+                                    <i class="fas fa-calendar me-1"></i>Creato
+                                </th>
+                                <th scope="col" class="text-center">
+                                    <i class="fas fa-cogs me-1"></i>Azioni
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td class="fw-bold">{{ user.id }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">{{ user.name }}</div>
+                                            {% if user.is_active %}
+                                                <span class="badge bg-success rounded-pill">Attivo</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary rounded-pill">Inattivo</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="mailto:{{ user.email }}" class="text-decoration-none">
+                                        {{ user.email }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if user.age %}
+                                        <span class="badge bg-info rounded-pill">{{ user.age }} anni</span>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ user.created_at|date }}
+                                    </small>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
+                                        <a href="/users/{{ user.id }}/edit" 
+                                           class="btn btn-outline-primary btn-sm btn-action"
+                                           title="Modifica">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-outline-danger btn-sm btn-action"
+                                                onclick="confirmDelete({{ user.id }}, '{{ user.name }}')"
+                                                title="Elimina">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nessun utente trovato</h5>
+                    <p class="text-muted mb-4">Inizia creando il tuo primo utente</p>
+                    <a href="/users/create" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Crea Primo Utente
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal per conferma eliminazione -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Conferma Eliminazione
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Sei sicuro di voler eliminare l'utente <strong id="deleteUserName"></strong>?</p>
+                <p class="text-muted small mb-0">Questa azione non può essere annullata.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annulla
+                </button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Elimina
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-sm {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    .btn-action {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .table td {
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmDelete(userId, userName) {
+    document.getElementById('deleteUserName').textContent = userName;
+    document.getElementById('deleteForm').action = `/users/${userId}/delete`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+// Auto-dismiss alerts after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+});
+</script>
+{% endblock %}

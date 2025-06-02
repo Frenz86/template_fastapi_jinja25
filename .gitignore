@@ -1,2 +1,3 @@
 .env
 /app/fastapi_app.db
+/app/__pycache__

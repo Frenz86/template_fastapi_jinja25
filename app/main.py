@@ -4,31 +4,45 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 import uvicorn
-import os
-from datetime import datetime
 
+from datetime import datetime
 from database import get_db, engine, Base
 from models import User
 from schemas import UserCreate, UserResponse
 from crud import create_user, get_users, get_user, update_user, delete_user
+
+from fastapi.middleware.cors import CORSMiddleware
 
 # Create database and tables
 Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI
 app = FastAPI(
-    title="FastAPI CRUD App", 
-    version="1.0.0",
-    description="Un'applicazione CRUD completa con FastAPI, SQLite e Jinja2",
-    docs_url="/docs",
-    redoc_url="/redoc"
-)
+                title="FastAPI CRUD App", 
+                version="1.0.0",
+                description="Un'applicazione CRUD completa con FastAPI, SQLite e Jinja2",
+                docs_url="/api", #instead /docs
+                redoc_url="/redoc"
+                )
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="../static"), name="static")
 
 # Initialize templates  
 templates = Jinja2Templates(directory="../templates")
+
+# CORS middleware for development
+#from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+                    CORSMiddleware,
+                    allow_origins=["http://localhost:3000", "http://localhost:8000"],
+                    allow_credentials=True,
+                    allow_methods=["*"],
+                    allow_headers=["*"],
+                    )
+
+#######################################################################################
 
 # Add custom template functions
 def format_datetime(dt):
@@ -52,11 +66,10 @@ templates.env.globals['now'] = datetime.now
 @app.get("/health")
 async def health_check():
     return {
-        "status": "healthy",
-        "service": "FastAPI CRUD App",
-        "version": "1.0.0",
-        "database": "SQLite"
-    }
+            "status": "healthy",
+            "service": "FastAPI CRUD App",
+            "version": "1.0.0",
+            }
 
 # Home page
 @app.get("/", response_class=HTMLResponse)
@@ -91,12 +104,12 @@ async def create_user_form(request: Request):
 # Handle user creation
 @app.post("/users/create")
 async def create_user_post(
-    request: Request,
-    name: str = Form(...),
-    email: str = Form(...),
-    age: int = Form(None),
-    db: Session = Depends(get_db)
-):
+                            request: Request,
+                            name: str = Form(...),
+                            email: str = Form(...),
+                            age: int = Form(None),
+                            db: Session = Depends(get_db)
+                            ):
     try:
         # Validazione base
         if not name.strip():
@@ -136,13 +149,13 @@ async def edit_user_form(request: Request, user_id: int, db: Session = Depends(g
 # Handle user update
 @app.post("/users/{user_id}/edit")
 async def update_user_post(
-    request: Request,
-    user_id: int,
-    name: str = Form(...),
-    email: str = Form(...),
-    age: int = Form(None),
-    db: Session = Depends(get_db)
-):
+                            request: Request,
+                            user_id: int,
+                            name: str = Form(...),
+                            email: str = Form(...),
+                            age: int = Form(None),
+                            db: Session = Depends(get_db)
+                            ):
     try:
         # Validazione base
         if not name.strip():
@@ -223,20 +236,12 @@ async def api_delete_user(user_id: int, db: Session = Depends(get_db)):
 @app.exception_handler(404)
 async def not_found_handler(request: Request, exc: HTTPException):
     return templates.TemplateResponse("404.html", {
-        "request": request,
-        "title": "Pagina Non Trovata"
-    }, status_code=404)
+                                                    "request": request,
+                                                    "title": "Pagina Non Trovata"
+                                                    }, status_code=404
+                                    )
 
-# CORS middleware for development
-from fastapi.middleware.cors import CORSMiddleware
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:8000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+#####################################################################################
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True,log_level="info")

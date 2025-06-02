@@ -4,46 +4,46 @@ services:
   # Database PostgreSQL
   postgres:
     image: postgres:15-alpine
-    container_name: postgres_db
+    container_name: ${POSTGRES_CONTAINER_NAME:-postgres_db}
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-fastapi_db}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password123}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      #- ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     networks:
       - app-network
 
   # Redis per caching
   redis:
     image: redis:7-alpine
-    container_name: redis_cache
+    container_name: ${REDIS_CONTAINER_NAME:-redis_cache}
     restart: unless-stopped
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     networks:
       - app-network
 
   # pgAdmin per gestione database
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: pgadmin
+    container_name: ${PGADMIN_CONTAINER_NAME:-pgadmin}
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@example.com}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     ports:
-      - "5050:80"
+      - "${PGADMIN_PORT:-5050}:80"
     depends_on:
       - postgres
     networks:
@@ -54,18 +54,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: fastapi_app
+    container_name: ${FASTAPI_CONTAINER_NAME:-fastapi_app}
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-fastapi_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379
-      ENVIRONMENT: ${ENVIRONMENT:-development}
+      ENVIRONMENT: ${ENVIRONMENT}
     volumes:
       - ./app:/app
       - ./templates:/app/templates
       - ./static:/app/static
     ports:
-      - "8000:8000"
+      - "${FASTAPI_PORT:-8000}:8000"
     depends_on:
       - postgres
       - redis
@@ -73,14 +73,14 @@ services:
       - app-network
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
-  # Caddy reverse proxy
+  # Caddy reverse proxy  
   caddy:
     image: caddy:2-alpine
-    container_name: caddy_proxy
+    container_name: ${CADDY_CONTAINER_NAME:-caddy_proxy}
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - ./static:/var/www/static

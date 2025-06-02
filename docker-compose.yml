@@ -1,4 +1,5 @@
 version: '3.8'
+# il file .env viene letto di default dal docker-compose
 
 services:
   # Database PostgreSQL

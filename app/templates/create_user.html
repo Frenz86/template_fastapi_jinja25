@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - FastAPI CRUD{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-user-plus me-2"></i>
+                    {{ title }}
+                </h4>
+            </div>
+            
+            <div class="card-body">
+                <form method="post" id="createUserForm" novalidate>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">
+                                    <i class="fas fa-user me-1"></i>
+                                    Nome Completo *
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="name" 
+                                       name="name" 
+                                       required
+                                       maxlength="100"
+                                       placeholder="Inserisci il nome completo">
+                                <div class="invalid-feedback">
+                                    Il nome è obbligatorio e deve essere valido.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>
+                                    Email *
+                                </label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       required
+                                       placeholder="utente@esempio.com">
+                                <div class="invalid-feedback">
+                                    Inserisci un indirizzo email valido.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="age" class="form-label">
+                                    <i class="fas fa-birthday-cake me-1"></i>
+                                    Età
+                                </label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="age" 
+                                       name="age" 
+                                       min="1" 
+                                       max="120"
+                                       placeholder="Inserisci l'età (opzionale)">
+                                <div class="invalid-feedback">
+                                    L'età deve essere un numero tra 1 e 120.
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Campo opzionale
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="/" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Torna alla Lista
+                        </a>
+                        
+                        <div>
+                            <button type="reset" class="btn btn-outline-warning me-2">
+                                <i class="fas fa-undo me-2"></i>
+                                Reset
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                Crea Utente
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Info Card -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Informazioni
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        I campi contrassegnati con * sono obbligatori
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        L'email deve essere unica nel sistema
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-check text-success me-2"></i>
+                        L'età è opzionale ma deve essere valida se inserita
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation
+(function() {
+    'use strict';
+    
+    const form = document.getElementById('createUserForm');
+    
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
+        form.classList.add('was-validated');
+    });
+    
+    // Real-time validation
+    const inputs = form.querySelectorAll('input[required]');
+    inputs.forEach(function(input) {
+        input.addEventListener('blur', function() {
+            if (input.checkValidity()) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+            } else {
+                input.classList.remove('is-valid');
+                input.classList.add('is-invalid');
+            }
+        });
+    });
+    
+    // Age validation
+    const ageInput = document.getElementById('age');
+    ageInput.addEventListener('input', function() {
+        const age = parseInt(this.value);
+        if (this.value && (age < 1 || age > 120)) {
+            this.setCustomValidity('L\'età deve essere tra 1 e 120 anni');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+})();
+
+// Auto-focus on first input
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('name').focus();
+});
+</script>
+{% endblock %}

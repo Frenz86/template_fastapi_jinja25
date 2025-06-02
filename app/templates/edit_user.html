@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - FastAPI CRUD{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-user-edit me-2"></i>
+                        {{ title }}
+                    </h4>
+                    <span class="badge bg-dark">ID: {{ user.id }}</span>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <form method="post" id="editUserForm" novalidate>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">
+                                    <i class="fas fa-user me-1"></i>
+                                    Nome Completo *
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="name" 
+                                       name="name" 
+                                       required
+                                       maxlength="100"
+                                       value="{{ user.name }}"
+                                       placeholder="Inserisci il nome completo">
+                                <div class="invalid-feedback">
+                                    Il nome è obbligatorio e deve essere valido.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>
+                                    Email *
+                                </label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       required
+                                       value="{{ user.email }}"
+                                       placeholder="utente@esempio.com">
+                                <div class="invalid-feedback">
+                                    Inserisci un indirizzo email valido.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="age" class="form-label">
+                                    <i class="fas fa-birthday-cake me-1"></i>
+                                    Età
+                                </label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="age" 
+                                       name="age" 
+                                       min="1" 
+                                       max="120"
+                                       value="{{ user.age if user.age else '' }}"
+                                       placeholder="Inserisci l'età (opzionale)">
+                                <div class="invalid-feedback">
+                                    L'età deve essere un numero tra 1 e 120.
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Campo opzionale
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    Data Creazione
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       value="{{ user.created_at.strftime('%d/%m/%Y alle %H:%M') }}" 
+                                       readonly>
+                                <div class="form-text">
+                                    <i class="fas fa-lock me-1"></i>
+                                    Campo non modificabile
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="/" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Torna alla Lista
+                        </a>
+                        
+                        <div>
+                            <button type="button" 
+                                    class="btn btn-outline-danger me-2"
+                                    onclick="confirmDelete({{ user.id }}, '{{ user.name }}')">
+                                <i class="fas fa-trash me-2"></i>
+                                Elimina
+                            </button>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save me-2"></i>
+                                Aggiorna Utente
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- User Info Card -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Dettagli Utente
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>ID Utente:</strong> {{ user.id }}<br>
+                        <strong>Stato:</strong> 
+                        {% if user.is_active %}
+                            <span class="badge bg-success">Attivo</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inattivo</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Creato il:</strong> {{ user.created_at.strftime('%d/%m/%Y alle %H:%M') }}<br>
+                        {% if user.updated_at %}
+                            <strong>Ultima modifica:</strong> {{ user.updated_at.strftime('%d/%m/%Y alle %H:%M') }}
+                        {% else %}
+                            <strong>Ultima modifica:</strong> <span class="text-muted">Mai modificato</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Warning Card -->
+        <div class="card mt-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Attenzione
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Le modifiche saranno salvate immediatamente
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        L'email deve rimanere unica nel sistema
+                    </li>
+                    <li class="mb-0">
+                        <i class="fas fa-exclamation text-warning me-2"></i>
+                        L'eliminazione dell'utente non può essere annullata
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal per conferma eliminazione -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Conferma Eliminazione
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Sei sicuro di voler eliminare l'utente <strong id="deleteUserName"></strong>?</p>
+                <p class="text-muted small mb-0">Questa azione non può essere annullata e tutti i dati associati andranno persi.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Annulla
+                </button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Elimina Definitivamente
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation
+(function() {
+    'use strict';
+    
+    const form = document.getElementById('editUserForm');
+    
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
+        form.classList.add('was-validated');
+    });
+    
+    // Real-time validation
+    const inputs = form.querySelectorAll('input[required]');
+    inputs.forEach(function(input) {
+        input.addEventListener('blur', function() {
+            if (input.checkValidity()) {
+                input.classList.remove('is-invalid');
+                input.classList.add('is-valid');
+            } else {
+                input.classList.remove('is-valid');
+                input.classList.add('is-invalid');
+            }
+        });
+    });
+    
+    // Age validation
+    const ageInput = document.getElementById('age');
+    ageInput.addEventListener('input', function() {
+        const age = parseInt(this.value);
+        if (this.value && (age < 1 || age > 120)) {
+            this.setCustomValidity('L\'età deve essere tra 1 e 120 anni');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+})();
+
+// Delete confirmation
+function confirmDelete(userId, userName) {
+    document.getElementById('deleteUserName').textContent = userName;
+    document.getElementById('deleteForm').action = `/users/${userId}/delete`;
+    
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
+}
+
+// Auto-focus on first input
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('name').focus();
+    document.getElementById('name').select();
+});
+</script>
+{% endblock %}

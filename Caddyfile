@@ -6,7 +6,7 @@ localhost {
         file_server
     }
 
-    # Reverse proxy verso FastAPI
+    # Reverse proxy verso FastAPI (name of the container)
     reverse_proxy fastapi:8000 {
         # Headers per mantenere informazioni originali
         header_up Host {host}

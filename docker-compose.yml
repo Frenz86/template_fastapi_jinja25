@@ -50,7 +50,7 @@ services:
     networks:
       - app-network
 
-  # FastAPI Application
+  # FastAPI Application (no image, build container from thid Dockerfile)
   fastapi:
     build:
       context: .

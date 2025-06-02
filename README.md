@@ -49,6 +49,10 @@ cd fastapi-crud-project
 ```
 
 ### 2. Configura le variabili d'ambiente
+
+commentare nel file database.py #DATABASE_URL = os.getenv('DATABASE_URL', default='sqlite:///./fastapi_app.db')
+e decommentare quella di POSTGRESQL
+
 ```bash
 cp .env.example .env
 # Modifica il file .env con le tue configurazioni

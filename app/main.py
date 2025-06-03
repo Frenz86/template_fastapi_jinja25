@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from fastapi.responses import ORJSONResponse
 import uvicorn
 
 from datetime import datetime
@@ -18,6 +19,7 @@ Base.metadata.create_all(bind=engine)
 
 # Initialize FastAPI
 app = FastAPI(
+                default_response_class=ORJSONResponse,
                 title="FastAPI CRUD App", 
                 version="1.0.0",
                 description="Un'applicazione CRUD completa con FastAPI, SQLite e Jinja2",
@@ -41,6 +43,20 @@ app.add_middleware(
                     allow_methods=["*"],
                     allow_headers=["*"],
                     )
+
+#######################################################################################
+# pip install scalar-fastapi
+from scalar_fastapi import get_scalar_api_reference
+
+# go to http://127.0.0.1:8000/scalar
+# from scalar_fastapi import get_scalar_api_reference
+
+@app.get("/scalar", include_in_schema=False)
+async def scalar_html():
+    return get_scalar_api_reference(
+                                    openapi_url=app.openapi_url,
+                                    title=app.title + " - Scalar",
+                                    )
 
 #######################################################################################
 

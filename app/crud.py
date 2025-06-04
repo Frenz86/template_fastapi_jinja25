@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from models import User
-from schemas import UserCreate, UserUpdate
+from schemas import UserCreate
 from typing import List, Optional
 
 def get_user(db: Session, user_id: int) -> Optional[User]:

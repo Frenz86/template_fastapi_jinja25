@@ -45,18 +45,18 @@ app.add_middleware(
                     )
 
 #######################################################################################
-# pip install scalar-fastapi
-from scalar_fastapi import get_scalar_api_reference
-
-# go to http://127.0.0.1:8000/scalar
+# # pip install scalar-fastapi
 # from scalar_fastapi import get_scalar_api_reference
 
-@app.get("/scalar", include_in_schema=False)
-async def scalar_html():
-    return get_scalar_api_reference(
-                                    openapi_url=app.openapi_url,
-                                    title=app.title + " - Scalar",
-                                    )
+# # go to http://127.0.0.1:8000/scalar
+# # from scalar_fastapi import get_scalar_api_reference
+
+# @app.get("/scalar", include_in_schema=False)
+# async def scalar_html():
+#     return get_scalar_api_reference(
+#                                     openapi_url=app.openapi_url,
+#                                     title=app.title + " - Scalar",
+#                                     )
 
 #######################################################################################
 

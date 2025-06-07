@@ -1,11 +1,14 @@
-# Configurazione Caddy per FastAPI
-localhost {
+# Configurazione Caddy per FastAPI con dominio fake
+test.it {
+    # TLS automatico con certificato self-signed per sviluppo locale
+    tls internal
+    
     # Gestione file statici
     handle_path /static/* {
         root * /var/www/static
         file_server
     }
-
+    
     # Reverse proxy verso FastAPI (name of the container)
     reverse_proxy fastapi:8000 {
         # Headers per mantenere informazioni originali
@@ -14,27 +17,25 @@ localhost {
         header_up X-Forwarded-For {remote_host}
         header_up X-Forwarded-Proto {scheme}
     }
-
+    
     # Logging
     log {
         output file /var/log/caddy/access.log
     }
-
+    
     # Compressione automatica
     encode gzip
-
+    
     # Headers di sicurezza
     header {
         # Sicurezza base
         X-Content-Type-Options nosniff
         X-Frame-Options DENY
         X-XSS-Protection "1; mode=block"
-        
         # Cache per file statici
         /static/* Cache-Control "public, max-age=2592000"
     }
 }
-
 # Configurazione per produzione con dominio personalizzato
 # yourdomain.com {
 #     reverse_proxy fastapi:8000
